@@ -14,22 +14,47 @@
 
 import os
 import subprocess
+from typing import Dict, List, Optional
 
-def get_user_input(prompt, default=None):
+OCCURRENCES: Dict[str, str] = {
+    "1": "First",
+    "2": "Second",
+    "3": "Third",
+    "4": "Fourth",
+}
+
+DAYS_OF_WEEK: Dict[str, str] = {
+    "0": "Sunday",
+    "1": "Monday",
+    "2": "Tuesday",
+    "3": "Wednesday",
+    "4": "Thursday",
+    "5": "Friday",
+    "6": "Saturday",
+}
+
+OCCURRENCE_RANGES: Dict[str, str] = {
+    "1": "1-7",
+    "2": "8-14",
+    "3": "15-21",
+    "4": "22-28",
+}
+
+def get_user_input(prompt: str, default: Optional[str] = None) -> str:
     """Prompt the user for input with an optional default value."""
     user_input = input(f"{prompt} [{default}]: ").strip()
     return user_input if user_input else default
 
-def select_options(options, prompt):
+def select_options(options: Dict[str, str], prompt: str) -> List[str]:
     """
     Display a list of options and allow the user to select multiple choices.
 
     Args:
-        options (dict): A dictionary where keys are option numbers and values are option descriptions.
+        options (Dict[str, str]): A dictionary where keys are option numbers and values are option descriptions.
         prompt (str): The prompt message to display.
 
     Returns:
-        list: A list of selected option keys as strings.
+        List[str]: A list of selected option keys as strings.
     """
     print(prompt)
     for key, value in options.items():
@@ -38,7 +63,7 @@ def select_options(options, prompt):
     selected = [s.strip() for s in selected if s.strip() in options]
     return selected
 
-def configure_cron():
+def configure_cron() -> None:
     """Configure cron jobs based on user input."""
     print("Welcome to the Cron Configuration for Parking Reminder!\n")
     
@@ -49,13 +74,7 @@ def configure_cron():
     
     # Select occurrences
     print("\nSelect occurrences for reminders:")
-    occurrences = {
-        "1": "First",
-        "2": "Second",
-        "3": "Third",
-        "4": "Fourth",
-    }
-    selected_occurrences = select_options(occurrences, "Select the occurrences of the month for reminders:")
+    selected_occurrences = select_options(OCCURRENCES, "Select the occurrences of the month for reminders:")
     
     if not selected_occurrences:
         print("No valid occurrences selected. Exiting.")
@@ -63,16 +82,7 @@ def configure_cron():
     
     # Select days
     print("\nSelect days of the week for reminders:")
-    days_of_week = {
-        "0": "Sunday",
-        "1": "Monday",
-        "2": "Tuesday",
-        "3": "Wednesday",
-        "4": "Thursday",
-        "5": "Friday",
-        "6": "Saturday",
-    }
-    selected_days = select_options(days_of_week, "Select the days of the week for reminders:")
+    selected_days = select_options(DAYS_OF_WEEK, "Select the days of the week for reminders:")
     
     if not selected_days:
         print("No valid days selected. Exiting.")
@@ -93,7 +103,7 @@ def configure_cron():
     # Get reminder interval in seconds
     while True:
         interval_input = get_user_input(
-            "How often do you want it to spam you to move your car, until you close the notification? (Measured in seconds.. yes I personally needed it in seconds)", 
+            "How often do you want it to spam you to move your car, until you close the notification? (Measured in seconds)", 
             default="5"
         )
         try:
@@ -104,14 +114,6 @@ def configure_cron():
                 print("Interval must be a positive integer.")
         except ValueError:
             print("Invalid input. Please enter a positive integer for the interval.")
-    
-    # Define the day of month ranges based on occurrence
-    occurrence_ranges = {
-        "1": "1-7",
-        "2": "8-14",
-        "3": "15-21",
-        "4": "22-28",
-    }
     
     # Get the project directory
     project_dir = os.getcwd()
@@ -127,7 +129,7 @@ PULSE_SERVER=unix:/mnt/wslg/PulseServer
     
     # Generate cron entries for each combination of occurrence and day
     for occ in selected_occurrences:
-        day_range = occurrence_ranges.get(occ)
+        day_range = OCCURRENCE_RANGES[occ]
         for day in selected_days:
             cron_entry = (
                 f"{minute} {hour} {day_range} * {day} "
