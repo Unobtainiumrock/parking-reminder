@@ -28,9 +28,40 @@ sudo apt install espeak-ng
 brew install espeak-ng
 ```
 
-## Setup
+### Ensure `cron` Is Installed and Running
 
-0. Ensure that the cron 
+Before proceeding, make sure `cron` is installed and running on your system.
+
+#### On Ubuntu:
+```bash
+# Check if cron is installed
+dpkg -l | grep cron
+
+# Install cron if not installed
+sudo apt update
+sudo apt install cron
+
+# Start and enable cron
+sudo systemctl start cron
+sudo systemctl enable cron
+
+# Verify cron is running
+sudo systemctl status cron
+```
+
+#### On macOS:
+```bash
+# Check if cron is installed and running
+ps aux | grep cron
+
+# If cron is not shown in the list, you may need to load it:
+sudo launchctl load /System/Library/LaunchDaemons/com.vix.cron.plist
+
+# Verify cron is loaded and running
+launchctl list | grep cron
+```
+
+## Setup
 
 1. **Clone the repository:**
 
@@ -40,9 +71,9 @@ cd parking-reminder
 ```
 
 2. **Run the Setup Script**
-  Use the provided `setup_cron.sh` to configure your cron jobs. This script will run the interactive configure_cron.py script to gather your preferences and set up the cron job accordingly. I suggest that during setup, you shift reminders to one day prior to the day that street cleaning is done.
+   Use the provided `setup_cron.sh` to configure your cron jobs. This script will run the interactive `configure_cron.py` script to gather your preferences and set up the cron job accordingly. I suggest that during setup, you shift reminders to one day prior to the day that street cleaning is done.
 
-  Make sure the script is executable:
+   Make sure the script is executable:
   
   ```bash
   chmod +x setup_cron.sh
@@ -54,20 +85,12 @@ cd parking-reminder
   ./setup_cron.sh
   ```
 
-
-## How It Works
-- The script checks for a car_moved_flag.txt file in the same directory.
-- If the file **does not exist**, it plays a reminder and shows a pop-up alter.
-- Clicking "Dismiss reminder" creates the flag file, disabling future reminders.
-- The flag file is deleted on the first of each month using the cron job, re-enabling reminders.
-
-
 # Example CLI Walkthrough
 
 1. **Run the Setup Script:**
 
 ```bash
-./setup_cron. sh
+./setup_cron.sh
 ```
 
 2. **Interactive CLI**:
@@ -102,7 +125,7 @@ Cron jobs have been successfully configured!
 
 ```
 
-Resulting Cron Jobs: The script will set up cron jobs that trigger parking_reminder.py on:
+Resulting Cron Jobs: The script will set up cron jobs that trigger `parking_reminder.py` on:
 
   - 1st Monday: Days 1-7, Day of Week 1 (Monday).
   - 1st Wednesday: Days 1-7, Day of Week 3 (Wednesday).
@@ -111,4 +134,5 @@ Resulting Cron Jobs: The script will set up cron jobs that trigger parking_remin
 
 All at 09:00 AM with a spam interval of 10 seconds.
 
-**Once again, I strongly suggest setting them to the night or day prior. I learned this the hard way where I still didn't move my car in time. DONT BE ME"**
+**Once again, I strongly suggest setting them to the night or day prior. I learned this the hard way where I still didn't move my car in time. DONT BE ME**
+
