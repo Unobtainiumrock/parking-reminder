@@ -16,6 +16,7 @@ import os
 import subprocess
 from typing import Dict, List, Optional
 
+# Represents the n-th occurrence of a day in a given month.
 OCCURRENCES: Dict[str, str] = {
     "1": "First",
     "2": "Second",
