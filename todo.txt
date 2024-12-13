@@ -1,0 +1,23 @@
+List of potential structural changes to consider
+
+PARKING-REMINDER/
+├── LICENSE
+├── README.md
+├── setup.py
+├── setup.cfg
+├── pyproject.toml  # Optional, but recommended for modern packaging
+├── parking_reminder/  # Your Python package
+│   ├── __init__.py
+│   ├── configure_cron.py
+│   ├── parking_reminder.py
+├── setup_cron.sh  # External shell script, not part of the Python package
+├── tests/         # Unit tests
+│   ├── test_configure_cron.py
+│   ├── test_parking_reminder.py
+
+
+List of test coverage commands (Need to finalize code coverage, tests, and deployment of package to PyPI)
+
+pytest --cov=. --cov-report=xml
+pytest --cov=your_package_name --cov-report=xml
+

@@ -14,28 +14,30 @@
 
 # #!/bin/bash
 
-# Ensure the script is run from the project directory
+# Determine the script's directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
 # Check if Python is installed
-if ! command -v python3 &> /dev/null
-then
+if ! command -v python3 &> /dev/null; then
     echo "Python3 could not be found. Please install Python3 and try again."
     exit 1
 fi
 
+# Define the path to configure_cron.py
+CRON_SCRIPT_PATH="parking_reminder/configure_cron.py"
+
 # Check if configure_cron.py exists
-if [ ! -f "configure_cron.py" ]; then
-    echo "configure_cron.py not found in the current directory."
+if [ ! -f "$CRON_SCRIPT_PATH" ]; then
+    echo "configure_cron.py not found in the expected directory: $CRON_SCRIPT_PATH."
     exit 1
 fi
 
 # Make configure_cron.py executable
-chmod +x configure_cron.py
+chmod +x "$CRON_SCRIPT_PATH"
 
 # Run the configuration script
 echo "Running the cron configuration script..."
-python3 configure_cron.py
+python3 "$CRON_SCRIPT_PATH"
 
 echo "Cron setup completed."

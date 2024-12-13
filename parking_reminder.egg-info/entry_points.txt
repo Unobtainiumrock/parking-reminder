@@ -1,0 +1,2 @@
+[console_scripts]
+parking-reminder = parking_reminder.parking_reminder:main

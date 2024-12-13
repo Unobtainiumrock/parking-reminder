@@ -14,6 +14,7 @@
 
 import os
 import subprocess
+import shutil
 from typing import Dict, List, Optional
 
 # Represents the n-th occurrence of a day in a given month.
@@ -71,7 +72,7 @@ def configure_cron() -> None:
     # Get reminder message
     reminder_message = get_user_input(
         "Enter the reminder message", default="Move your car to avoid a parking ticket!"
-    )
+    ).replace('"', '\\"')
     
     # Select occurrences
     print("\nSelect occurrences for reminders:")
@@ -117,7 +118,21 @@ def configure_cron() -> None:
             print("Invalid input. Please enter a positive integer for the interval.")
     
     # Get the project directory
-    project_dir = os.getcwd()
+    project_dir = os.path.dirname(os.path.abspath(__file__))
+    print("DIR"*10, project_dir)
+    
+    reminder_script_path = os.path.join(project_dir, "parking_reminder.py")
+    
+    if not os.path.exists(reminder_script_path):
+      print(f"Error: {reminder_script_path} not found. Ensure the file exists and try again.")
+      return
+    
+    # Ensure required commands are available
+    required_commands = ["crontab", "date"]
+    for cmd in required_commands:
+        if not shutil.which(cmd):
+            print(f"Error: Required command '{cmd}' is not installed. Please install it and try again.")
+            return
     
     # Initialize cron entries with environment variables
     env_vars = """\
@@ -128,14 +143,19 @@ PULSE_SERVER=unix:/mnt/wslg/PulseServer
 """
     cron_entries = [env_vars]
     
-    # Generate cron entries for each combination of occurrence and day
+    # Generate a separate cron entry for each occurrence-day combination
+    # We'll run the cron job daily at the given time, and use a shell condition
+    # to ensure it only executes the script if it's the correct day and occurrence.
     for occ in selected_occurrences:
         day_range = OCCURRENCE_RANGES[occ]
+        start_day, end_day = day_range.split("-")
         for day in selected_days:
+            # date +%u: Monday=1, ... Sunday=7
+            # Check that (day_of_week == selected_day) AND (current date in occurrence range)
+            shell_condition = (f'[ "$(date +\\%u)" -eq {int(day)+1} -a "$(date +\\%d)" -ge {start_day} -a "$(date +\\%d)" -le {end_day} ]')
             cron_entry = (
-                f"{minute} {hour} {day_range} * {day} "
-                f'[ "$(date +\\%d)" -ge {day_range.split("-")[0]} -a "$(date +\\%d)" -le {day_range.split("-")[1]} ] && '
-                f"/usr/bin/python3 {project_dir}/parking_reminder.py --message \"{reminder_message}\" --interval {interval}"
+                f"{minute} {hour} * * * {shell_condition} && "
+                f"/usr/bin/python3 {project_dir}/parking_reminder/parking_reminder.py --message \"{reminder_message}\" --interval {interval}"
             )
             cron_entries.append(cron_entry)
     
@@ -155,7 +175,10 @@ PULSE_SERVER=unix:/mnt/wslg/PulseServer
     )
     
     # Combine existing cron with new cron entries
-    updated_cron = filtered_cron.strip() + "\n" + new_cron_jobs
+    if filtered_cron.strip():
+        updated_cron = filtered_cron.strip() + "\n" + new_cron_jobs
+    else:
+        updated_cron = new_cron_jobs
     
     # Update the crontab
     process = subprocess.run(["crontab"], input=updated_cron, text=True)
